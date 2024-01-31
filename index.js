@@ -17,22 +17,31 @@ function processMessages(messages, state) {
 }
 
 function parseLine(line) {
-  const lineData = line.split(" ");
-  if (lineData.length < 2 || lineData.length > 3) {
-    return { error: "Invalid command format" };
-  }
+  try {
+    const [timestampStr, command, valueStr] = line.split(" ");
+    const timestamp = parseInt(timestampStr, 10);
+    if (isNaN(timestamp)) {
+      throw new Error("Invalid timestamp");
+    }
 
-  const [timestamp, command, value] = lineData;
-  const parsedTimestamp = parseInt(timestamp, 10);
-  if (isNaN(parsedTimestamp)) {
-    return { error: "Invalid timestamp format" };
-  }
+    if (command !== "Delta" && command !== "TurnOff") {
+      throw new Error("Invalid command");
+    }
 
-  return {
-    timestamp: parsedTimestamp,
-    command,
-    value: value ? parseFloat(value) : null,
-  };
+    let value = null;
+    if (command === "Delta") {
+      value = parseFloat(valueStr);
+      if (isNaN(value) || value < -1.0 || value > 1.0) {
+        throw new Error(
+          "Invalid value: Delta value must be between -1.0 and +1.0"
+        );
+      }
+    }
+
+    return { timestamp, command, value };
+  } catch (error) {
+    return { error: error.message };
+  }
 }
 
 function updateStateWithCommandData(state, commandData) {

@@ -20,5 +20,13 @@ test("parses Delta command correctly", async () => {
 
 test("Handles invalid line data", async () => {
   const result = parseLine("invalidTime +0.5");
-  expect(result).toEqual({ error: "Invalid timestamp format" });
+  expect(result).toEqual({ error: "Invalid timestamp" });
+});
+
+test("Handles invalid Delta value out of range", () => {
+  const line = "1544206562 Delta 1.5";
+  const result = parseLine(line);
+  expect(result.error).toBe(
+    "Invalid value: Delta value must be between -1.0 and +1.0"
+  );
 });

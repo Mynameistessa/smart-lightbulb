@@ -53,7 +53,7 @@ describe("Smart Dimmable Lightbulb Script", () => {
     });
 
     process.on("close", (code) => {
-      expect(errorOutput).toContain("Error: Unexpected command format");
+      expect(errorOutput).toMatch(/Invalid command/);
       done();
     });
 
