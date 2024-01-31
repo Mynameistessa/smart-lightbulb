@@ -1,5 +1,22 @@
 const readline = require("readline");
 
+let messageSet = new Set();
+let messages = [];
+
+function processMessages(messages, state) {
+  console.log(messages);
+  messages.sort((a, b) => a.timestamp - b.timestamp);
+
+  messages.forEach((commandData) => {
+    if (!messageSet.has(commandData.timestamp)) {
+      messageSet.add(commandData.timestamp);
+      state = updateStateWithCommandData(state, commandData);
+    }
+  });
+
+  return { state, messageSet };
+}
+
 function parseLine(line) {
   const lineData = line.split(" ");
   if (lineData.length < 2 || lineData.length > 3) {
@@ -65,11 +82,14 @@ function main(inputSource) {
     if (commandData.error) {
       errors.push(commandData.error);
     } else {
-      state = updateStateWithCommandData(state, commandData);
+      // state = updateStateWithCommandData(state, commandData); old
+      messages.push(commandData);
     }
   });
 
   rl.on("close", () => {
+    console.log(messages, "messages before processing");
+    processMessages(messages, state);
     if (errors.length > 0) {
       console.error(`Errors encountered:\n${errors.join("\n")}`);
       process.exit(1);
@@ -97,4 +117,4 @@ if (require.main === module) {
   main(inputSource);
 }
 
-module.exports = { parseLine, updateStateWithCommandData };
+module.exports = { parseLine, updateStateWithCommandData, processMessages };
