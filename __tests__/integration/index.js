@@ -37,6 +37,31 @@ describe("Smart Dimmable Lightbulb Script", () => {
     runTestWithInputFile("standardInput.txt", done);
   });
 
+  it("correctly calculates energy with various Delta values", (done) => {
+    jest.setTimeout(10000);
+    const deltaCommands =
+      "1544206562 TurnOff\n" +
+      "1544206563 Delta +0.5\n" +
+      "1544207563 Delta -0.3\n" +
+      "1544208563 Delta +0.2\n" +
+      "1544209563 TurnOff";
+
+    const process = spawn("node", ["./index.js"], { shell: true });
+
+    process.stdin.write(deltaCommands);
+    process.stdin.end();
+
+    let output = "";
+    process.stdout.on("data", (data) => {
+      output += data.toString();
+    });
+
+    process.on("close", (code) => {
+      expect(output).toContain("Estimated energy used: 1.528 Wh");
+      done();
+    });
+  });
+
   it("handles errors in input correctly", (done) => {
     jest.setTimeout(10000);
     const filePath = path.join(__dirname, "mocks", "inputWithErrors.txt");
