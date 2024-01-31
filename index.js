@@ -4,7 +4,6 @@ let messageSet = new Set();
 let messages = [];
 
 function processMessages(messages, state) {
-  console.log(messages);
   messages.sort((a, b) => a.timestamp - b.timestamp);
 
   messages.forEach((commandData) => {
@@ -82,13 +81,11 @@ function main(inputSource) {
     if (commandData.error) {
       errors.push(commandData.error);
     } else {
-      // state = updateStateWithCommandData(state, commandData); old
       messages.push(commandData);
     }
   });
 
   rl.on("close", () => {
-    console.log(messages, "messages before processing");
     processMessages(messages, state);
     if (errors.length > 0) {
       console.error(`Errors encountered:\n${errors.join("\n")}`);
