@@ -1,9 +1,7 @@
 const readline = require("readline");
 
-let messageSet = new Set();
-let messages = [];
-
 function processMessages(messages, state) {
+  let messageSet = new Set();
   messages.sort((a, b) => a.timestamp - b.timestamp);
 
   messages.forEach((commandData) => {
@@ -12,7 +10,6 @@ function processMessages(messages, state) {
       state = updateStateWithCommandData(state, commandData);
     }
   });
-
   return { state, messageSet };
 }
 
@@ -51,25 +48,28 @@ function updateStateWithCommandData(state, commandData) {
     state.lastTimestamp !== null ? timestamp - state.lastTimestamp : 0;
 
   const currentPower = state.currentDimmerValue * 5;
-  // consumed in this interval
-  state.totalEnergy += currentPower * (timeDiff / 3600);
+
+  const energyConstumedInInterval = currentPower * (timeDiff / 3600);
 
   if (command !== "TurnOff" && command !== "Delta") {
     console.error("Error: Unexpected command format.");
   }
 
+  let newCurrentDimmerValue = 0;
   if (command === "TurnOff") {
-    state.currentDimmerValue = 0;
+    newCurrentDimmerValue = 0;
   } else if (command === "Delta" && !isNaN(value)) {
-    state.currentDimmerValue = Math.max(
+    newCurrentDimmerValue = Math.max(
       0,
       Math.min(1, state.currentDimmerValue + value)
     );
   }
 
-  state.lastTimestamp = timestamp;
-
-  return state;
+  return {
+    totalEnergy: state.totalEnergy + energyConstumedInInterval,
+    lastTimestamp: timestamp,
+    currentDimmerValue: newCurrentDimmerValue,
+  };
 }
 
 function main(inputSource) {
@@ -79,6 +79,7 @@ function main(inputSource) {
     currentDimmerValue: 1.0,
   };
   let errors = [];
+  let messages = [];
 
   const rl = readline.createInterface({
     input: inputSource,
@@ -95,13 +96,13 @@ function main(inputSource) {
   });
 
   rl.on("close", () => {
-    processMessages(messages, state);
+    const result = processMessages(messages, state);
     if (errors.length > 0) {
       console.error(`Errors encountered:\n${errors.join("\n")}`);
       process.exit(1);
     } else {
       const outputString = `Estimated energy used: ${Math.abs(
-        state.totalEnergy
+        result.state.totalEnergy
       ).toFixed(3)} Wh`;
       console.log(outputString.trim());
     }
