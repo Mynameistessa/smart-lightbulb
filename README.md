@@ -4,8 +4,8 @@ This project includes a script that consumes messages and ultimately outputs an 
 
 This script reads messages from stdin until it reaches an EOF. The messages represent a measurement of light output and come in two types:
 
-- A TurnOff message indicates that the light has been turned off completely
-- A Delta message indicates that the brightness has been adjusted; it includes a value for the change in the dimmer value (a floating point number between -1.0 and +1.0 inclusive).
+- A TurnOff message indicating that the light has been turned off completely
+- A Delta message indicating that the brightness has been adjusted; it includes a value for the change in the dimmer value (a floating point number between -1.0 and +1.0 inclusive).
 
 ## How to run
 
